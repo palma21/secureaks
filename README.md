@@ -376,7 +376,7 @@ This setup is different than your typical web to database communication as it fl
 
 **NOTE: Kubernetes volume mounting is not Azure Identity aware yet so when mounting Azure Files we still need to use traditional credentials which means creating a kubernetes secret.**
 
-**NOTE: Upload the images in the fruit directory of this repository into an Azure Storage Account that is setup with Azure Files and all those images are in a directory called 'fruit'. It is this directory that the back-end worker will use to analyze images. I'll show how to do this below**
+**NOTE: The application images are in a public Docker hub, whitelist docker.io or mirror them to your personal Container Registry that you whitelisted above**
 
 ```bash
 ## Deploy Workload

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: imageclassifierweb
-        image: jpalma.azurecr.io/imageclassifierweb:0.1
+        image: jpalma/imageclassifierweb:0.1
         imagePullPolicy: Always
         ports:
         - name: http

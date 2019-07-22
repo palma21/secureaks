@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: imageclassifierworker
-          image: jpalma.azurecr.io/imageclassifierworker:0.1
+          image: jpalma/imageclassifierworker:0.1
           imagePullPolicy: IfNotPresent
           env:
             - name: API_BASE_URL
