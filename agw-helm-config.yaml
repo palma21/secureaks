@@ -1,0 +1,41 @@
+# This file contains the essential configs for the ingress controller helm chart
+
+################################################################################
+# Specify which application gateway the ingress controller will manage
+#
+appgw:
+    subscriptionId: dummy
+    resourceGroup: secdemo-rg
+    name: secdemoag
+
+################################################################################
+# Specify which kubernetes namespace the ingress controller will watch
+# Default value is "default"
+#
+# kubernetes:
+#   watchNamespace: <namespace>
+
+################################################################################
+# Specify the authentication with Azure Resource Manager
+#
+# Two authentication methods are available:
+# - Option 1: AAD-Pod-Identity (https://github.com/Azure/aad-pod-identity)
+# - Option 2: ServicePrincipal as a kubernetes secret
+# armAuth:
+#   type: servicePrincipal
+#   secretName: secdemoag
+#   secretKey: ServicePrincipal.json
+armAuth:
+    type: aadPodIdentity
+    identityResourceID: dummy
+    identityClientID: dummy
+
+################################################################################
+# Specify if the cluster is RBAC enabled or not
+rbac:
+    enabled: true
+
+################################################################################
+# Specify aks cluster related information
+aksClusterConfiguration:
+    apiServerAddress: dummy
