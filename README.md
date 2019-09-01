@@ -196,7 +196,7 @@ Now we will create the AKS cluster.
 ```bash
 az aks create -g $RG -n $AKSNAME -l $LOC \
   --node-count 3 -k $K8S_VERSION -a monitoring \
-  --network-plugin $PLUGIN ---generate-ssh-keys \
+  --network-plugin $PLUGIN --generate-ssh-keys \
   --network-policy azure \
   --service-cidr 10.41.0.0/16 \
   --dns-service-ip 10.41.0.10 \
