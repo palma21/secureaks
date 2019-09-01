@@ -80,7 +80,7 @@ Here is a brief description of each of the dedicated subnets leveraging the vari
 * APPGWSUBNET_NAME - This subnet is dedicated to Azure Application Gateway v2 which will serve a dual purpose. It will be used as a Web Application Firewall (WAF) as well as an Ingress Controller. **NOTE: Azure App Gateway Ingress Controller is in preview at this time.**
 
 ```bash
-z network vnet create \
+az network vnet create \
     --resource-group $RG \
     --name $VNET_NAME \
     --address-prefixes 10.42.0.0/16 \
