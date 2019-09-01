@@ -46,11 +46,13 @@ AGPUBLICIP_NAME="${PREFIX}agpublicip"
 STORAGE_NAME="${PREFIX}${DATE}storage"
 FILES_NAME="fruit"
 # IMPORTANT!! UPDATE TO YOUR SUBSCRIPTION NAME
-AZURE_ACCOUNT_NAME="JPalma-Internal"
+AZURE_ACCOUNT_NAME="gobyers-int"
+ACR_NAME="gordopremiumreg"
 K8S_VERSION=1.13.5
 VM_SIZE=Standard_D2s_v3
 PLUGIN=azure
 SUBID=$(az account show -s $AZURE_ACCOUNT_NAME -o tsv --query 'id')
+ACR_ID=$(az acr show --name $ACR_NAME --query "id" --output tsv)
 ```
 
 ## Setup correct subscription 
@@ -171,8 +173,7 @@ az network firewall network-rule create -g $RG -f $FWNAME --collection-name 'aks
 # IMPORTANT: Here I'm adding a subset of the recommended FQDNs. 
 # For the complete list and explanation of minimum required and recommended FQDNs please check https://aka.ms/aks/egress
 # Also, make sure to have into account any specific egress needs of your workloads.
-# 'jpalma.azurecr.io' is my personal Azure Container Registry here to represent custom egress needs
-az network firewall application-rule create -g $RG -f $FWNAME --collection-name 'aksfwar' -n 'fqdn' --source-addresses '*' --protocols 'http=80' 'https=443' --target-fqdns 'jpalma.azurecr.io' '*.azmk8s.io' 'aksrepos.azurecr.io' '*blob.core.windows.net' '*mcr.microsoft.com' '*.cdn.mscr.io' 'login.microsoftonline.com' 'management.azure.com' '*ubuntu.com' --action allow --priority 100
+az network firewall application-rule create -g $RG -f $FWNAME --collection-name 'aksfwar' -n 'fqdn' --source-addresses '*' --protocols 'http=80' 'https=443' --target-fqdns "${ACR_NAME}.azurecr.io" '*.azmk8s.io' 'aksrepos.azurecr.io' '*blob.core.windows.net' '*mcr.microsoft.com' '*.cdn.mscr.io' 'login.microsoftonline.com' 'management.azure.com' '*ubuntu.com' --action allow --priority 100
 
 # Associate AKS Subnet to FW
 az network vnet subnet update -g $RG --vnet-name $VNET_NAME --name $AKSSUBNET_NAME --route-table $FWROUTE_TABLE_NAME
@@ -185,7 +186,6 @@ Now we will assign the needed permissions to the AKS service principal. This wil
 az role assignment create --assignee $APPID --scope $VNETID --role Contributor
 
 # If you have one or more Azure Container Registries you want the cluster to be able to pull from make sure you add pull permissions for them too
-ACR_ID=$(az acr show --name <yourACRName> --resource-group <yourACRResourceGroup> --query "id" --output tsv)
 az role assignment create --assignee $APPID --role acrpull --scope $ACR_ID 
 ```
 
