@@ -118,7 +118,7 @@ If you want to create it and automatically store its APPID and PASSWORD values t
 eval "$(az ad sp create-for-rbac -n ${PREFIX}sp --skip-assignment | jq -r '. | to_entries | .[] | .key + "=\"" + .value + "\""' | sed -r 's/^(.*=)/\U\1/')"
 ```
 
-**Alternatively:** If this is too much bash-foo, you are not running bash or want to manually do it, run instead:
+**Alternatively:** If this is too much bash-foo, if you're getting an error (parse error: Invalid numeric literal at line 1, column 6), you're not running bash or want to manually do it, run instead:
 ```bash
 az ad sp create-for-rbac -n ${PREFIX}sp --skip-assignment
 # Take the SP Creation output from above command and fill in Variables accordingly
