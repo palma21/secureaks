@@ -47,10 +47,12 @@ STORAGE_NAME="${PREFIX}${DATE}storage"
 FILES_NAME="fruit"
 # IMPORTANT!! UPDATE TO YOUR SUBSCRIPTION NAME
 AZURE_ACCOUNT_NAME="JPalma-Internal"
+ACR_NAME="jpalma"
 K8S_VERSION=1.13.5
 VM_SIZE=Standard_D2s_v3
 PLUGIN=azure
 SUBID=$(az account show -s $AZURE_ACCOUNT_NAME -o tsv --query 'id')
+ACR_ID=$(az acr show --name $ACR_NAME --query "id" --output tsv)
 ```
 
 ## Setup correct subscription 
@@ -80,7 +82,7 @@ Here is a brief description of each of the dedicated subnets leveraging the vari
 * APPGWSUBNET_NAME - This subnet is dedicated to Azure Application Gateway v2 which will serve a dual purpose. It will be used as a Web Application Firewall (WAF) as well as an Ingress Controller. **NOTE: Azure App Gateway Ingress Controller is in preview at this time.**
 
 ```bash
-z network vnet create \
+az network vnet create \
     --resource-group $RG \
     --name $VNET_NAME \
     --address-prefixes 10.42.0.0/16 \
@@ -116,7 +118,7 @@ If you want to create it and automatically store its APPID and PASSWORD values t
 eval "$(az ad sp create-for-rbac -n ${PREFIX}sp --skip-assignment | jq -r '. | to_entries | .[] | .key + "=\"" + .value + "\""' | sed -r 's/^(.*=)/\U\1/')"
 ```
 
-**Alternatively:** If this is too much bash-foo, you are not running bash or want to manually do it, run instead:
+**Alternatively:** If this is too much bash-foo, if you're getting an error (parse error: Invalid numeric literal at line 1, column 6), you're not running bash or want to manually do it, run instead:
 ```bash
 az ad sp create-for-rbac -n ${PREFIX}sp --skip-assignment
 # Take the SP Creation output from above command and fill in Variables accordingly
@@ -171,8 +173,7 @@ az network firewall network-rule create -g $RG -f $FWNAME --collection-name 'aks
 # IMPORTANT: Here I'm adding a subset of the recommended FQDNs. 
 # For the complete list and explanation of minimum required and recommended FQDNs please check https://aka.ms/aks/egress
 # Also, make sure to have into account any specific egress needs of your workloads.
-# 'jpalma.azurecr.io' is my personal Azure Container Registry here to represent custom egress needs
-az network firewall application-rule create -g $RG -f $FWNAME --collection-name 'aksfwar' -n 'fqdn' --source-addresses '*' --protocols 'http=80' 'https=443' --target-fqdns 'jpalma.azurecr.io' '*.azmk8s.io' 'aksrepos.azurecr.io' '*blob.core.windows.net' '*mcr.microsoft.com' '*.cdn.mscr.io' 'login.microsoftonline.com' 'management.azure.com' '*ubuntu.com' --action allow --priority 100
+az network firewall application-rule create -g $RG -f $FWNAME --collection-name 'aksfwar' -n 'fqdn' --source-addresses '*' --protocols 'http=80' 'https=443' --target-fqdns "${ACR_NAME}.azurecr.io" '*.azmk8s.io' 'aksrepos.azurecr.io' '*blob.core.windows.net' '*mcr.microsoft.com' '*.cdn.mscr.io' 'login.microsoftonline.com' 'management.azure.com' '*ubuntu.com' --action allow --priority 100
 
 # Associate AKS Subnet to FW
 az network vnet subnet update -g $RG --vnet-name $VNET_NAME --name $AKSSUBNET_NAME --route-table $FWROUTE_TABLE_NAME
@@ -185,7 +186,6 @@ Now we will assign the needed permissions to the AKS service principal. This wil
 az role assignment create --assignee $APPID --scope $VNETID --role Contributor
 
 # If you have one or more Azure Container Registries you want the cluster to be able to pull from make sure you add pull permissions for them too
-ACR_ID=$(az acr show --name <yourACRName> --resource-group <yourACRResourceGroup> --query "id" --output tsv)
 az role assignment create --assignee $APPID --role acrpull --scope $ACR_ID 
 ```
 
@@ -195,8 +195,8 @@ Now we will create the AKS cluster.
 
 ```bash
 az aks create -g $RG -n $AKSNAME -l $LOC \
-  --node-count 3 -k $K8S_VERSION -a monitoring \
-  --network-plugin $PLUGIN ---generate-ssh-keys \
+  --node-count 3 -a monitoring \
+  --network-plugin $PLUGIN --generate-ssh-keys \
   --network-policy azure \
   --service-cidr 10.41.0.0/16 \
   --dns-service-ip 10.41.0.10 \
