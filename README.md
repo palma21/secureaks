@@ -391,7 +391,7 @@ az storage account create -n $STORAGE_NAME -g $RG -l $LOC
 STORAGE_KEY=$(az storage account keys list -n $STORAGE_NAME -g $RG --query [0].'value' -o tsv)
 
 az storage share create -n $FILES_NAME --account-key $STORAGE_KEY --account-name $STORAGE_NAME
-az storage file upload-batch --destination $FILES_NAME --source ~/workbench/readydemos/WinterReady2019/security/fruit/ --account-name $STORAGE_NAME --account-key $STORAGE_KEY
+az storage file upload-batch --destination $FILES_NAME --source fruit/ --account-name $STORAGE_NAME --account-key $STORAGE_KEY
 
 # Create k8s secret with storage key
 k create secret generic fruit-secret --from-literal=azurestorageaccountname=$STORAGE_NAME --from-literal=azurestorageaccountkey=$STORAGE_KEY
