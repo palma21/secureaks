@@ -461,7 +461,7 @@ To exmplify we will create a jumbox and whitelist it, so that only commands from
 # Create jumpbox with Ubtuntu as image and your machine user as username and your stored ssh keys
 az vm create -n jumpbox -g $RG --image ubuntults
 
-JUMPBOX=$(az vm show -d -n readyjumpbox -g $RG --query publicIps -o tsv)
+JUMPBOX=$(az vm show -d -n jumpbox -g $RG --query publicIps -o tsv)
 
 # Whitelist Jumpbox and FW IP (so nodes can communicate)
 az aks update -g $RG -n $AKSNAME --api-server-authorized-ip-ranges $FWPUBLIC_IP/32,$JUMPBOX/32
